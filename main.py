@@ -24,20 +24,24 @@ next_id = 4
 
 
 # --- Stage 1 & 2 Endpoints ---
-@app.get("/")
+@app.get("/",summary="API Root")
 def get_root():
+    """Returns basic API metadata and available endpoints."""
     return {"name": "Task API", "version": "1.0", "endpoints": ["/tasks"]}
 
-@app.get("/health")
+@app.get("/health",summary="Health Check")
 def health_check():
+    """Used by monitoring tools to check if the server is active."""
     return {"status": "ok"}
 
-@app.get("/tasks")
+@app.get("/tasks",summary="List All Tasks")
 def get_tasks():
+    """Retrieve all tasks currently stored in memory."""
     return tasks_db
 
-@app.get("/tasks/{task_id}")
+@app.get("/tasks/{task_id}",summary="Get Task by ID")
 def get_task(task_id: int):
+    """Retrieve a single task using its unique integer ID."""
     for task in tasks_db:
         if task["id"] == task_id:
             return task
@@ -48,8 +52,9 @@ def get_task(task_id: int):
 
 
 # --- Stage 3 Endpoint ---
-@app.post("/tasks", status_code=status.HTTP_201_CREATED)
+@app.post("/tasks", status_code=status.HTTP_201_CREATED,summary="Create a new task")
 def create_task(payload: TaskCreate):
+    """Create a new task with an automatically assigned ID."""
     global next_id
     if not payload.title.strip():
         raise HTTPException(
@@ -68,8 +73,9 @@ def create_task(payload: TaskCreate):
 
 
 # --- Stage 4 Endpoints ---
-@app.put("/tasks/{task_id}")
+@app.put("/tasks/{task_id}",summary="Update a Task")
 def update_task(task_id: int, payload: TaskUpdate):
+    """Update title and/or completed status of an existing task."""
     # Search for task by ID
     task = next((t for t in tasks_db if t["id"] == task_id), None)
     if not task:
@@ -101,8 +107,9 @@ def update_task(task_id: int, payload: TaskUpdate):
     return task
 
 
-@app.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
+@app.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT,summary="Delete a Task")
 def delete_task(task_id: int):
+    """Remove a task permanently from memory by ID.""" 
     global tasks_db
     task_idx = next((i for i, t in enumerate(tasks_db) if t["id"] == task_id), None)
     if task_idx is None:
