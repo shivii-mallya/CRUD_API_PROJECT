@@ -1,6 +1,13 @@
 from fastapi import FastAPI, HTTPException, status
+from pydantic import BaseModel, Field
 
 app = FastAPI(title="Task API", version="1.0")
+
+
+# --- Pydantic Schema for Input Validation ---
+class TaskCreate(BaseModel):
+    title: str = Field(..., min_length=1, description="Title of the task")
+
 
 # --- In-Memory Database ---
 tasks_db = [
@@ -10,6 +17,8 @@ tasks_db = [
 ]
 next_id = 4
 
+
+# --- Stage 1 Endpoints ---
 @app.get("/")
 def get_root():
     return {"name": "Task API", "version": "1.0", "endpoints": ["/tasks"]}
@@ -18,21 +27,40 @@ def get_root():
 def health_check():
     return {"status": "ok"}
 
+
+# --- Stage 2 Endpoints ---
 @app.get("/tasks")
 def get_tasks():
-    """Returns the full list of tasks."""
     return tasks_db
-
 
 @app.get("/tasks/{task_id}")
 def get_task(task_id: int):
-    """Returns a single task by ID or 404 if not found."""
     for task in tasks_db:
         if task["id"] == task_id:
             return task
-            
-    # If the loop finishes without finding the task ID:
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
         detail=f"Task {task_id} not found"
     )
+
+
+# --- Stage 3 Endpoint ---
+@app.post("/tasks", status_code=status.HTTP_201_CREATED)
+def create_task(payload: TaskCreate):
+    global next_id
+    
+    # Reject empty or whitespace-only titles ("   ")
+    if not payload.title.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Title cannot be empty or whitespace"
+        )
+
+    new_task = {
+        "id": next_id,
+        "title": payload.title.strip(),
+        "done": False
+    }
+    tasks_db.append(new_task)
+    next_id += 1
+    return new_task
