@@ -33,6 +33,8 @@ The client-facing REST API interface remains completely unchanged, demonstrating
   - `title` (TEXT NOT NULL)
   - `done` (INTEGER DEFAULT 0)
 
+![Database Viewer Screenshot](Database_viewer.png)
+
 ### Why SQLite?
 1. **Zero Configuration:** Runs embedded in Python without needing a separate database service (like PostgreSQL or MySQL) installed.
 2. **File-Based Persistence:** Stores data locally in `tasks.db`, making data durable across application restarts.
