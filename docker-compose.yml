@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  # Database Service
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Shi@2020Ol
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"
+    volumes:
+      # Named volume ensures data persists even if the container is removed
+      - postgres_data:/var/lib/postgresql/data
+
+  # Application Service
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      # Note: Use 'db' (the service name above) as the hostname instead of 'localhost'
+      DATABASE_URL: postgresql://postgres:Shi@2020Oldb:5432/mydb
+    depends_on:
+      - db
+
+volumes:
+  # Declare the persistent volume
+  postgres_data:
