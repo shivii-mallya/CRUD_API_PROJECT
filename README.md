@@ -41,6 +41,17 @@ The client-facing REST API interface remains completely unchanged, demonstrating
 3. **Lightweight & Portable:** Ideal for local development, testing, and small-scale applications.
 
 ---
+## Architecture & Repository Swap
+The application replaces the temporary in-memory store with a PostgreSQL repository. Thanks to clean separation of concerns, the core business service logic and FastAPI route handlers remained entirely unchanged during this migration.
+
+## Data Persistence Verification
+Database persistence was verified using the following procedure:
+1. Started the application stack using `docker compose up`.
+2. Created a new record via the Swagger UI (`POST /tasks`).
+3. Confirmed creation by fetching all entries (`GET /tasks`).
+4. Stopped and removed active containers using `docker compose down`.
+5. Restarted the stack with `docker compose up`.
+6. Executed `GET /tasks` again to confirm that all previously created records remained intact.
 
 ## 🛠️ Installation & Setup
 
